@@ -297,7 +297,13 @@ module Resque
       def shutdown
         @shutdown = true
         if @sleeping
-          release_master_lock!
+          thread = Thread.new {
+            Resque.clean_schedules
+            release_master_lock!
+          }
+
+          thread.join(5)
+
           exit
         end
       end
